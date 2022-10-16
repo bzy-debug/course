@@ -7,8 +7,21 @@ type expr =
   | Var of string
   | Let of string * expr * expr
 
+type stmt =
+  | Def of string * expr
+  | Exp of expr
+
 (* Interpreter *)
-let rec eval_expr expr env =
+
+let rec run stmts env =
+    match stmts with
+  | Def(x, exp)::rest -> run rest ((x, eval_expr exp env)::env)
+  | Exp exp::rest ->
+      eval_expr exp env |> string_of_int |> print_endline;
+      run rest env
+  | [] -> ()
+
+and eval_expr expr env =
     match expr with
   | Cst i -> i
   | Add (e1, e2) -> eval_expr e1 env + eval_expr e2 env
@@ -29,7 +42,10 @@ let test =
   assert (eval_expr expr1 [] = 42);
   assert (eval_expr expr2 [] = 84);
   assert (eval_expr expr3 [] = 5);
-  assert (eval_expr expr4 [] = 16);
+  assert (eval_expr expr4 [] = 16)
+
+let prog = [Def("x", Cst 42); Def("y", Add(Var "x", Cst 7)); Exp (Add(Var "x", Var "y")); Exp expr3]
+let () = run prog []
 
 (* Nameless *)
 module Nameless = struct
