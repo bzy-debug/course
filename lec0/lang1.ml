@@ -168,7 +168,3 @@ let expr6:expr = Add(Cst 1, Let("x", Cst 2, Add(Var "x", Cst 7)))
 let _ = 
   assert (instrs3 = compile_exp expr5 [] 0 false);
   assert (instrs4 = compile_exp expr6 [] 0 false)
-
-let rec instr_var2instr instr_vars =
-  match instr_vars with
-  | 
