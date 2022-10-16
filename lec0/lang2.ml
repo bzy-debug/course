@@ -109,6 +109,7 @@ let test =
   assert ((lowering expr3 []) = nameless_expr3);
   assert ((lowering expr4 []) = nameless_expr4)
 
+(* Variable Stack Machine *)
 
 (* Instruction *)
 type instr = Cst of int | Add | Mul | Var of int | Pop | Swap
