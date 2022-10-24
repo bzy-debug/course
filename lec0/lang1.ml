@@ -153,18 +153,24 @@ let _ =
   assert (eval_instr_var instrs4 [] = 10)
 
 (* Compile *)
-let rec compile_exp (exp: expr) cenv offset in_let =
+let rec compile_exp (exp: expr) v_pos sp =
   match exp with
   | Cst i -> [Cst i]
-  | Add(e1, e2) -> compile_exp e1 cenv offset in_let @
-                   compile_exp e2 cenv (offset + if in_let then 1 else 0) in_let @ [Add]
-  | Mul(e1, e2) -> compile_exp e1 cenv offset in_let @
-                   compile_exp e2 cenv (offset + if in_let then 1 else 0) in_let @ [Mul]
-  | Var x -> [Var ((index cenv x) + offset)]
-  | Let (x, e1, e2) -> compile_exp e1 cenv offset in_let @ compile_exp e2 (x::cenv) offset true @ [Swap; Pop]
+  | Add(e1, e2) -> compile_exp e1 v_pos sp @
+                   compile_exp e2 v_pos (sp+1) @ [Add]
+  | Mul(e1, e2) -> compile_exp e1 v_pos sp @
+                   compile_exp e2 v_pos (sp+1) @ [Mul]
+  | Var x -> [Var (sp - (List.assoc x v_pos) - 1)]
+  | Let (x, e1, e2) -> compile_exp e1 v_pos sp @ compile_exp e2 ((x, sp)::v_pos) (sp+1) @ [Swap; Pop]
 
 let expr5:expr = Let("x", Cst 17, Add(Var "x", Var "x"))
 let expr6:expr = Add(Cst 1, Let("x", Cst 2, Add(Var "x", Cst 7)))
+let expr7:expr = Add(Cst 1, Let("x", Mul(Cst 12, Cst 2), Add(Var "x", Cst 7)))
 let _ = 
-  assert (instrs3 = compile_exp expr5 [] 0 false);
-  assert (instrs4 = compile_exp expr6 [] 0 false)
+  assert (instrs3 = compile_exp expr5 [] 0);
+  assert (instrs4 = compile_exp expr6 [] 0)
+
+let rec var_instr2instr var_instrs stack =
+  match var_instrs with
+  | Cst i :: rest -> Cst i :: var_instr2instr rest vars
+  | 
